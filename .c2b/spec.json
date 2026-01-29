@@ -1,0 +1,190 @@
+{
+  "project_name": "Discord Casino Bot",
+  "theme": "Discordサーバー向けのギャンブル/カジノ体験を提供する",
+  "description": "ルーレット、スロット、ブラックジャック、ちんちろの4種類のゲームをプレイできるDiscordボットです。サーバー内で使用できる独自の仮想通貨「こいん」システムを搭載しており、ユーザーは初期資金をもとにゲームを楽しみ、資産を増やすことができます。ユーザーデータはJSONファイルで永続化され、サーバー内でのランキング機能も提供します。",
+  "goal": "Discordサーバーのメンバーが手軽に楽しめる、本格的なカジノ体験を提供し、コミュニティの活性化に貢献する。",
+  "features": [
+    "仮想通貨システム: ユーザーごとに「こいん」の所持量を管理。初期値として1000こいんを配布し、デイリーボーナス機能も提供する。",
+    "データ永続化: ユーザーの所持金データをJSONファイルに保存し、ボットが再起動してもデータが失われないようにする。",
+    "ルーレットゲーム: 赤/黒、奇数/偶数、数字など、一般的な賭け方ができるヨーロピアンスタイルのルーレットを実装する。",
+    "スロットゲーム: シンプルな3リールのスロットマシンを実装し、絵柄が揃うと配当が得られる。",
+    "ブラックジャックゲーム: ディーラーと1対1で対戦するブラックジャックを実装。ヒット、スタンドなどのアクションが可能。",
+    "ちんちろゲーム: 3つのサイコロを使い、役に応じて配当が決まる日本の伝統的なダイスゲームを実装する。",
+    "ランキング機能: サーバー内のユーザーの所持金ランキングを表示する機能を提供する。"
+  ],
+  "commands": [
+    {
+      "name": "balance",
+      "display_name": "/balance",
+      "description": "あなたの現在の所持こいんを確認します。他のユーザーを指定することも可能です。",
+      "category": "通貨",
+      "command_type": "slash",
+      "parameters": [
+        {
+          "name": "user",
+          "type": "user",
+          "description": "所持金を確認したいユーザー（任意）",
+          "required": false
+        }
+      ],
+      "example": "/balance user:@ユーザー名"
+    },
+    {
+      "name": "daily",
+      "display_name": "/daily",
+      "description": "24時間に1回、ボーナスとして200こいんを受け取ります。",
+      "category": "通貨",
+      "command_type": "slash",
+      "parameters": [],
+      "example": "/daily"
+    },
+    {
+      "name": "ranking",
+      "display_name": "/ranking",
+      "description": "サーバー内の所持こいんランキングTOP10を表示します。",
+      "category": "通貨",
+      "command_type": "slash",
+      "parameters": [],
+      "example": "/ranking"
+    },
+    {
+      "name": "roulette",
+      "display_name": "/roulette",
+      "description": "ルーレットをプレイします。",
+      "category": "ゲーム",
+      "command_type": "slash",
+      "parameters": [
+        {
+          "name": "bet_type",
+          "type": "str",
+          "description": "賭ける場所（例: red, black, odd, even, 1-18, 19-36, または0-36の数字）",
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": "int",
+          "description": "賭けるこいんの額",
+          "required": true
+        }
+      ],
+      "example": "/roulette bet_type:red amount:100"
+    },
+    {
+      "name": "slots",
+      "display_name": "/slots",
+      "description": "スロットマシンをプレイします。",
+      "category": "ゲーム",
+      "command_type": "slash",
+      "parameters": [
+        {
+          "name": "amount",
+          "type": "int",
+          "description": "賭けるこいんの額",
+          "required": true
+        }
+      ],
+      "example": "/slots amount:50"
+    },
+    {
+      "name": "blackjack",
+      "display_name": "/blackjack",
+      "description": "ディーラーとブラックジャックで対戦します。",
+      "category": "ゲーム",
+      "command_type": "slash",
+      "parameters": [
+        {
+          "name": "amount",
+          "type": "int",
+          "description": "賭けるこいんの額",
+          "required": true
+        }
+      ],
+      "example": "/blackjack amount:200"
+    },
+    {
+      "name": "chinchiro",
+      "display_name": "/chinchiro",
+      "description": "3つのサイコロを使ってちんちろをプレイします。",
+      "category": "ゲーム",
+      "command_type": "slash",
+      "parameters": [
+        {
+          "name": "amount",
+          "type": "int",
+          "description": "賭けるこいんの額",
+          "required": true
+        }
+      ],
+      "example": "/chinchiro amount:100"
+    },
+    {
+      "name": "casino_help",
+      "display_name": "/casino_help",
+      "description": "カジノBotのコマンド一覧と各ゲームのルールを表示します。",
+      "category": "一般",
+      "command_type": "slash",
+      "parameters": [],
+      "example": "/casino_help"
+    }
+  ],
+  "persistence": "JSONファイル",
+  "persistence_details": "ユーザーデータを`data/users.json`というファイルに保存します。データ構造は、DiscordのユーザーIDをキーとした辞書形式です。各ユーザーの値には、`balance`（所持金）、`wins`（勝利数）、`losses`（敗北数）、`last_daily`（最終デイリーボーナス取得日時）などの情報を含みます。ファイルへの同時アクセスによるデータ破損を防ぐため、読み書き処理は`asyncio.Lock`を使用して排他制御を行います。",
+  "external_apis": [],
+  "dependencies": [
+    {
+      "package": "discord.py",
+      "version": "2.3.2",
+      "purpose": "Discord APIとの通信、ボットの基本的なフレームワークとして使用します。"
+    },
+    {
+      "package": "python-dotenv",
+      "version": "1.0.1",
+      "purpose": "`.env`ファイルから環境変数（特にDiscordボットトークン）を安全に読み込むために使用します。"
+    }
+  ],
+  "env_vars": [
+    "DISCORD_BOT_TOKEN"
+  ],
+  "constraints": [
+    "discord.py 2.x以上を使用する。",
+    "認証情報（ボットトークン）はコード内にハードコードせず、環境変数として管理する。",
+    "仮想通貨の単位は「こいん」とする。",
+    "ユーザーの初期所持金は1000こいんとする。",
+    "ちんちろは一般的なサイコロ3つを使用するルールで実装する。",
+    "各ゲームの最大BET額は、ユーザーの現在の所持金を超えない範囲とする。"
+  ],
+  "non_goals": [
+    "現実の金銭を扱うギャンブル機能の実装。",
+    "サーバー間での仮想通貨の移動。",
+    "Webダッシュボードなどの外部インターフェースの提供。",
+    "SQLiteやPostgreSQLなどのリレーショナルデータベースの使用。"
+  ],
+  "assumptions": [
+    "ボットは単一の、もしくは小〜中規模のDiscordサーバーで運用されることを想定している。",
+    "ボットの管理者は、Discord Developer Portalでボットを作成し、トークンを取得できる。",
+    "ボットをホストする環境（PCやサーバー）が用意されている。"
+  ],
+  "implementation_notes": [
+    {
+      "topic": "discord.py 2.xのセットアップ",
+      "note": "ボットの動作に必要な`Intents`（特に`members`と`message_content`）を有効にして`discord.Client`または`commands.Bot`を初期化する必要があります。スラッシュコマンドは`discord.app_commands`を使用して実装し、`tree.sync()`でDiscordサーバーに登録します。",
+      "source": "discord.py公式ドキュメント"
+    },
+    {
+      "topic": "JSONによるデータ永続化",
+      "note": "非同期環境でJSONファイルを読み書きする際は、データ競合を避けるために`asyncio.Lock`が不可欠です。データを読み込む関数、書き込む関数をそれぞれ用意し、必ずロックを取得してから操作を行うように設計してください。また、予期せぬシャットダウンに備え、定期的にデータを保存する仕組みも検討すると堅牢性が向上します。",
+      "source": "非同期プログラミングのベストプラクティス"
+    },
+    {
+      "topic": "ゲームのインタラクション",
+      "note": "ブラックジャックのように複数回のユーザー入力（ヒット/スタンド）が必要なゲームは、`discord.ui.View`と`discord.ui.Button`を使用してインタラクティブなUIを実装するのが現代的で推奨されます。これにより、ユーザーはチャットにコマンドを再入力するのではなく、ボタンをクリックするだけでゲームを進行できます。",
+      "source": "discord.pyのUI Kitに関するドキュメント"
+    },
+    {
+      "topic": "エラーハンドリング",
+      "note": "ユーザーが所持金以上の額を賭けようとした場合や、コマンドの引数が不正な場合など、想定されるエラーを適切に処理する機構を実装してください。`on_command_error`イベントや、各コマンド内での`try-except`ブロックを活用し、ユーザーに分かりやすいエラーメッセージを返却することが重要です。",
+      "source": "一般的なソフトウェア設計原則"
+    }
+  ],
+  "user_request": "Discordサーバーで遊べるカジノBotを作成したい。ゲームはルーレット、スロット、ブラックジャック、ちんちろの4種類。サーバー内で使える仮想通貨「こいん」を導入し、初期所持金は1000こいんとする。ユーザーの所持金データはJSONファイルで保存してほしい。"
+}
